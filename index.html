@@ -91,7 +91,8 @@ let analyzer;
 let source;
 let dataArray;
 let bufferLength;
-const audio = new Audio('Baila%20Sin%20Parar.mp3');
+const audio = new Audio('Baila Sin Parar.mp3');
+audio.crossOrigin = "anonymous";
 
 let currentScratchX = 180; 
 let currentScratchY = 90;
@@ -151,8 +152,7 @@ async function init() {
     });
     startStream(videoDevices[0]?.deviceId);
 
-    // LÓGICA DEL BOTÓN DE INICIO
-    startBtn.onclick = () => {
+startBtn.onclick = async () => {
         if (!audioCtx) {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             analyzer = audioCtx.createAnalyser();
@@ -164,12 +164,19 @@ async function init() {
             dataArray = new Uint8Array(bufferLength);
         }
         
+        // Forzar activación del contexto
+        if (audioCtx.state === 'suspended') {
+            await audioCtx.resume();
+        }
+
         audio.play().then(() => {
-            console.log("Audio iniciado");
-            startBtn.style.display = "none"; // Ocultar botón tras iniciar
-        }).catch(e => console.error("Error al reproducir:", e));
-    };
-}
+            console.log("Audio iniciado correctamente");
+            startBtn.style.display = "none";
+        }).catch(e => {
+            console.error("Error:", e);
+            alert("Error: No se pudo cargar el archivo 'Baila Sin Parar.mp3'. Asegúrate de que el nombre sea exacto en GitHub.");
+        });
+    };}
 
 async function startStream(id) {
     if (window.stream) window.stream.getTracks().forEach(t => t.stop());
