@@ -103,7 +103,7 @@ let ultimoColorDetectadoEnEsaZona = null;
 let colorObjetivoActual = "ROJO"; 
 let dificultad = 0;
 let puntuacion = 0;
-
+let objetivoConseguido = false;
 let particulas = [];
 
 class Particula {
@@ -217,6 +217,7 @@ function cambiarObjetivoAleatorio() {
     currentScratchX = OPCIONES_H[Math.floor(Math.random() * OPCIONES_H.length)];
     currentScratchY = OPCIONES_V[Math.floor(Math.random() * OPCIONES_V.length)];
     colorObjetivoActual = NOMBRES_COLORES[Math.floor(Math.random() * NOMBRES_COLORES.length)];
+    objetivoConseguido = false;
 }
 
 function loop() {
@@ -254,7 +255,8 @@ function loop() {
 
     let detectadoAhora = ultimoColorDetectadoEnEsaZona;
     if (detectadoAhora !== window.ultimoEstadoDeteccion) {
-        if (detectadoAhora !== null && detectadoAhora === colorObjetivoActual) {
+        if (detectadoAhora !== null && detectadoAhora === colorObjetivoActual && !objetivoConseguido) {
+            objetivoConseguido = true;
             crearExplosion(targetX, targetY, OBJETIVOS_HSV[colorObjetivoActual].hex);
             puntuacion++;
         }
