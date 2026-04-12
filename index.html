@@ -310,7 +310,8 @@ function loop() {
         ctx.fillStyle = obtenerColorLaser(dificultad);
         ctx.shadowBlur = 15;
         ctx.shadowColor = ctx.fillStyle;
-        ctx.fillText(`SCORE: ${puntuacion}`, 30, 45);
+        ctx.textAlign = "right";
+        ctx.fillText(`SCORE: ${puntuacion}`, canvas.width - 30, 45);
         ctx.restore();
         
     }
@@ -380,7 +381,7 @@ function dibujarMiraRainbow(x, y, detectado, objetivo) {
         ctx.lineWidth = ESTILO.miraGrosor + 2;
     } else if (hayDeteccionErronea) {
         const parpadeo = Math.sin(Date.now() / 50) > 0;
-        ctx.strokeStyle = parpadeo ? "#FF4500" : "#8B0000";
+        ctx.strokeStyle = parpadeo ? "#A020F0" : "#4B0082";
         ctx.lineWidth = ESTILO.miraGrosor;
     } else {
         ctx.strokeStyle = OBJETIVOS_HSV[objetivo].hex;
