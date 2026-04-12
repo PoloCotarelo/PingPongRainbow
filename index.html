@@ -101,7 +101,8 @@ let currentScratchX = 180;
 let currentScratchY = 90;
 let ultimoColorDetectadoEnEsaZona = null;
 let colorObjetivoActual = "ROJO"; 
-let dificultad = 0; 
+let dificultad = 0;
+let puntuacion = 0;
 
 let particulas = [];
 
@@ -255,6 +256,7 @@ function loop() {
     if (detectadoAhora !== window.ultimoEstadoDeteccion) {
         if (detectadoAhora !== null && detectadoAhora === colorObjetivoActual) {
             crearExplosion(targetX, targetY, OBJETIVOS_HSV[colorObjetivoActual].hex);
+            puntuacion++;
         }
     }
     window.ultimoEstadoDeteccion = detectadoAhora;
@@ -288,7 +290,9 @@ function loop() {
             // Lógica solicitada:
             // Si el promedio es muy alto (>230), es una parte rápida: movemos cada 5 beats
             // Si es normal, movemos cada 10 beats
-            let limiteBeats = (promedioBajos > 230) ? 5 : 10;
+            dificultad = Math.min(puntuacion / 50, 1);
+            let reduccionPorPuntos = Math.floor(puntuacion / 10) * 2;
+            let limiteBeats = Math.max((promedioBajos > 230 ? 10 : 20) - reduccionPorPuntos, 4);
 
             if (contadorEtiquetas >= limiteBeats) {
                 cambiarObjetivoAleatorio();
@@ -301,6 +305,14 @@ function loop() {
         }
         
         dibujarAnalizadorAudio();
+        ctx.save();
+        ctx.font = "bold 28px 'Segoe UI'";
+        ctx.fillStyle = obtenerColorLaser(dificultad);
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = ctx.fillStyle;
+        ctx.fillText(`SCORE: ${puntuacion}`, 30, 45);
+        ctx.restore();
+        
     }
     
     requestAnimationFrame(loop);
