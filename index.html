@@ -292,9 +292,9 @@ function loop() {
             // Lógica solicitada:
             // Si el promedio es muy alto (>230), es una parte rápida: movemos cada 5 beats
             // Si es normal, movemos cada 10 beats
-            dificultad = Math.min(puntuacion / 50, 1);
-            let reduccionPorPuntos = Math.floor(puntuacion / 10) * 2;
-            let limiteBeats = Math.max((promedioBajos > 230 ? 10 : 20) - reduccionPorPuntos, 4);
+            dificultad = Math.min(puntuacion / 60, 1);
+            let baseBeats = (promedioBajos > 230) ? 6 : 12;
+            let limiteBeats = Math.max(baseBeats - Math.floor(puntuacion / 6), 2);
 
             if (contadorEtiquetas >= limiteBeats) {
                 cambiarObjetivoAleatorio();
