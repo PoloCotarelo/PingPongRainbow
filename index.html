@@ -143,9 +143,9 @@ function showHighscores() {
     list.innerHTML = highscores.map((s, i) => {
         const clasePodio = i < 3 ? `rank-${i}` : '';
         const colorPuntos = i < 3 ? 'inherit' : '#00e676';
-        const colorTexto = i < 3 ? 'inherit' : '#00e676';
+        const styleFila = i < 3 ? '' : 'style="color: #00e676"';
         return `
-            <div class="score-row ${clasePodio}" style="color:${colorTexto}">
+            <div class="score-row ${clasePodio}" ${styleFila}>
                 <span>${i+1}. ${s.name}</span>
                 <span style="color:${colorPuntos}">${s.score} pts</span>
             </div>`;
