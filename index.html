@@ -143,8 +143,9 @@ function showHighscores() {
     list.innerHTML = highscores.map((s, i) => {
         const clasePodio = i < 3 ? `rank-${i}` : '';
         const colorPuntos = i < 3 ? 'inherit' : '#00e676';
+        const colorTexto = i < 3 ? 'inherit' : '#00e676';
         return `
-            <div class="score-row ${clasePodio}">
+            <div class="score-row ${clasePodio}" style="color:${colorTexto}">
                 <span>${i+1}. ${s.name}</span>
                 <span style="color:${colorPuntos}">${s.score} pts</span>
             </div>`;
@@ -158,6 +159,14 @@ function showHighscores() {
 
 document.getElementById('saveNameBtn').onclick = () => {
     const name = document.getElementById('nameInput').value.trim() || "ANÓNIMO";
+    if (name.toUpperCase() === "RESET") {
+        highscores = [];
+        localStorage.removeItem('pinponScores');
+        recordGuardadoEnEstaPartida = true;
+        document.getElementById('nameInputContainer').style.display = 'none';
+        showHighscores();
+        return;
+    }
     highscores.push({ name, score: puntuacion });
     highscores.sort((a, b) => b.score - a.score);
     highscores = highscores.slice(0, 10);
