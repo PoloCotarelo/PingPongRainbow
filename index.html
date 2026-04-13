@@ -34,9 +34,9 @@
             display: none; flex-direction: column; align-items: center; justify-content: center;
             color: #fff; z-index: 10; font-family: 'Segoe UI', sans-serif;
         }
-        .table-ranking { background: rgba(0,0,0,0.8); padding: 20px; border: 2px solid #00e676; border-radius: 10px; box-shadow: 0 0 20px #00e676; min-width: 300px; }
+        .table-ranking { background: rgba(0,0,0,0.8); padding: 20px; border: 2px solid #00e676; border-radius: 10px; box-shadow: 0 0 20px #00e676; min-width: 340px; height: 85%; display: flex; flex-direction: column; }
         .table-ranking h3 { margin-top: 0; text-align: center; color: #00e676; }
-        .score-row { display: flex; justify-content: space-between; border-bottom: 1px solid #333; padding: 5px 0; }
+        .score-row { display: flex; justify-content: space-between; border-bottom: 1px solid #333; padding: 12px 0; font-size: 1.1em; }
         #nameInputContainer { margin-top: 15px; display: none; text-align: center; }
         #nameInput { background: #121212; border: 1px solid #00e676; color: #fff; padding: 10px; border-radius: 5px; text-align: center; font-size: 1.1em; }
     </style>
@@ -128,7 +128,8 @@ let puntuacion = 0;
 let objetivoConseguido = false;
 let particulas = [];
 let highscores = JSON.parse(localStorage.getItem('pinponScores')) || [];
-
+let recordGuardadoEnEstaPartida = false;
+    
 function showHighscores() {
     const overlay = document.getElementById('highscore-overlay');
     const list = document.getElementById('ranking-list');
@@ -143,7 +144,7 @@ function showHighscores() {
         </div>`).join('');
 
     const isTop = highscores.length < 10 || puntuacion > highscores[highscores.length-1].score;
-    if (isTop) {
+    if (isTop && !recordGuardadoEnEstaPartida) {
         document.getElementById('nameInputContainer').style.display = 'block';
     }
 }
@@ -155,6 +156,7 @@ document.getElementById('saveNameBtn').onclick = () => {
     highscores = highscores.slice(0, 10);
     localStorage.setItem('pinponScores', JSON.stringify(highscores));
     document.getElementById('nameInputContainer').style.display = 'none';
+    recordGuardadoEnEstaPartida = true;
     showHighscores();
 };
 
@@ -223,6 +225,7 @@ async function init() {
             document.getElementById('mainCanvas').classList.remove('blur');
             document.getElementById('highscore-overlay').style.display = 'none';
             document.getElementById('nameInput').value = "";
+            recordGuardadoEnEstaPartida = false;
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             analyzer = audioCtx.createAnalyser();
             source = audioCtx.createMediaElementSource(audio);
