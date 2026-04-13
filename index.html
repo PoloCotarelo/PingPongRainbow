@@ -151,7 +151,7 @@ function showHighscores() {
             </div>`;
     }).join('');
     
-    const isTop = highscores.length < 10 || puntuacion > highscores[highscores.length-1].score;
+    const isTop = (highscores.length < 10 || puntuacion > highscores[highscores.length-1].score) && puntuacion > 0;
     if (isTop && !recordGuardadoEnEstaPartida) {
         document.getElementById('nameInputContainer').style.display = 'block';
     }
