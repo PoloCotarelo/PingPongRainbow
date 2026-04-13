@@ -28,6 +28,17 @@
         .sensor-card { background: #262626; padding: 8px; border-radius: 4px; font-size: 11px; border-left: 4px solid #444; }
         .detected { border-left-width: 10px; animation: pulse 1s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+        .blur { filter: blur(10px) brightness(40%); transition: all 0.5s; }
+        #highscore-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            color: #fff; z-index: 10; font-family: 'Segoe UI', sans-serif;
+        }
+        .table-ranking { background: rgba(0,0,0,0.8); padding: 20px; border: 2px solid #00e676; border-radius: 10px; box-shadow: 0 0 20px #00e676; min-width: 300px; }
+        .table-ranking h3 { margin-top: 0; text-align: center; color: #00e676; }
+        .score-row { display: flex; justify-content: space-between; border-bottom: 1px solid #333; padding: 5px 0; }
+        #nameInputContainer { margin-top: 15px; display: none; text-align: center; }
+        #nameInput { background: #121212; border: 1px solid #00e676; color: #fff; padding: 10px; border-radius: 5px; text-align: center; font-size: 1.1em; }
     </style>
 </head>
 <body>
@@ -42,6 +53,17 @@
 
 <div id="canvas-container">
     <canvas id="mainCanvas" width="640" height="480"></canvas>
+    <div id="highscore-overlay">
+        <div class="table-ranking">
+            <h3>🏆 TOP 10 LEGENDS</h3>
+            <div id="ranking-list"></div>
+            <div id="nameInputContainer">
+                <p>¡NUEVO RÉCORD!</p>
+                <input type="text" id="nameInput" placeholder="TU NOMBRE" maxlength="15">
+                <button id="saveNameBtn" style="margin-top:10px">GUARDAR</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="panel-control">
@@ -105,7 +127,43 @@ let dificultad = 0;
 let puntuacion = 0;
 let objetivoConseguido = false;
 let particulas = [];
+let highscores = JSON.parse(localStorage.getItem('pinponScores')) || [];
 
+function showHighscores() {
+    const overlay = document.getElementById('highscore-overlay');
+    const list = document.getElementById('ranking-list');
+    const canvas = document.getElementById('mainCanvas');
+    
+    canvas.classList.add('blur');
+    overlay.style.display = 'flex';
+    list.innerHTML = highscores.map((s, i) => `
+        <div class="score-row">
+            <span>${i+1}. ${s.name}</span>
+            <span style="color:#00e676">${s.score} pts</span>
+        </div>`).join('');
+
+    const isTop = highscores.length < 10 || puntuacion > highscores[highscores.length-1].score;
+    if (isTop) {
+        document.getElementById('nameInputContainer').style.display = 'block';
+    }
+}
+
+document.getElementById('saveNameBtn').onclick = () => {
+    const name = document.getElementById('nameInput').value.trim() || "ANÓNIMO";
+    highscores.push({ name, score: puntuacion });
+    highscores.sort((a, b) => b.score - a.score);
+    highscores = highscores.slice(0, 10);
+    localStorage.setItem('pinponScores', JSON.stringify(highscores));
+    document.getElementById('nameInputContainer').style.display = 'none';
+    showHighscores();
+};
+
+audio.onended = () => {
+    showHighscores();
+    startBtn.style.display = "block";
+    startBtn.innerText = "🔄 VOLVER A JUGAR";
+};
+    
 class Particula {
     constructor(x, y, color) {
         this.x = x;
@@ -159,6 +217,12 @@ async function init() {
     // LÓGICA DEL BOTÓN DE INICIO
     startBtn.onclick = () => {
         if (!audioCtx) {
+            puntuacion = 0;
+            dificultad = 0;
+            contadorEtiquetas = 0;
+            document.getElementById('mainCanvas').classList.remove('blur');
+            document.getElementById('highscore-overlay').style.display = 'none';
+            document.getElementById('nameInput').value = "";
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             analyzer = audioCtx.createAnalyser();
             source = audioCtx.createMediaElementSource(audio);
