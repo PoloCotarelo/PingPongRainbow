@@ -129,6 +129,9 @@ let colorObjetivoActual = "ROJO";
 let dificultad = 0;
 let puntuacion = 0;
 let objetivoConseguido = false;
+let notaActual = { x: 0, y: 0, activa: false };
+let yaEstabaEnZona = false;
+let mostrarEfectoPerfect = false;
 let particulas = [];
 let highscores = JSON.parse(localStorage.getItem('pinponScores')) || [];
 let recordGuardadoEnEstaPartida = false;
@@ -328,6 +331,49 @@ function loop() {
                 ultimoColorDetectadoEnEsaZona = state.color;
             }
 
+    if (notaActual.activa) {
+        let velocidad = 4 + (puntuacion / 8);
+        notaActual.y += velocidad;
+
+        const distAlObjetivo = Math.abs(notaActual.y - targetY);
+        
+        // Detección de "Camping": si detectamos el color correcto antes de que llegue a la zona
+        if (distAlObjetivo > 40 && ultimoColorDetectadoEnEsaZona === colorObjetivoActual) {
+            yaEstabaEnZona = true;
+        }
+
+        // Detección de Impacto: el centro pasa el borde interior (14px)
+        if (distAlObjetivo < 14 && ultimoColorDetectadoEnEsaZona === colorObjetivoActual && !objetivoConseguido) {
+            objetivoConseguido = true;
+            notaActual.activa = false;
+            
+            if (yaEstabaEnZona) {
+                puntuacion += 1;
+                crearExplosion(notaActual.x, targetY, OBJETIVOS_HSV[colorObjetivoActual].hex);
+            } else {
+                puntuacion += 2;
+                mostrarEfectoPerfect = true; // El aro dorado se activará en la función de dibujo
+                crearExplosion(notaActual.x, targetY, "#FFD700");
+            }
+            setTimeout(cambiarObjetivoAleatorio, 200);
+        }
+
+        // Fallo: la nota se pasa de largo
+        if (notaActual.y > targetY + 30) {
+            notaActual.activa = false;
+            cambiarObjetivoAleatorio();
+        }
+
+        // Dibujo de la nota cayendo
+        ctx.beginPath();
+        ctx.arc(notaActual.x, notaActual.y, 15, 0, Math.PI * 2);
+        ctx.fillStyle = OBJETIVOS_HSV[colorObjetivoActual].hex;
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = ctx.fillStyle;
+        ctx.fill();
+        ctx.closePath();
+    }
+            
             teleHtml += `
                 <div class="sensor-card" style="${state.color ? 'border-left-color:'+OBJETIVOS_HSV[state.color].hex : ''}">
                     <b>ZONA ${sh},${sv}</b><br>
@@ -379,10 +425,11 @@ function loop() {
             let baseBeats = (promedioBajos > 230) ? 6 : 12;
             let limiteBeats = Math.max(baseBeats - Math.floor(puntuacion / 6), 2);
 
-            if (contadorEtiquetas >= limiteBeats) {
-                cambiarObjetivoAleatorio();
-                contadorEtiquetas = 0;
-            }
+            if (!notaActual.activa) {
+                    const tx = (currentScratchX + 240) * (640 / 480);
+                    notaActual = { x: tx, y: 0, activa: true };
+                    yaEstabaEnZona = false;
+                }
 
             // "Cooldown" para no contar el mismo beat múltiples veces por milisegundo
             puedeCambiar = false;
@@ -459,11 +506,11 @@ function dibujarMiraRainbow(x, y, detectado, objetivo) {
     ctx.arc(0, 0, ESTILO.rainbowRadio, 0, Math.PI * 2);
     ctx.stroke();
     ctx.save();
-    if (esCorrecto) {
-        ctx.shadowBlur = ESTILO.glowIntensidad;
+    if (esCorrecto && mostrarEfectoPerfect) {
+        ctx.shadowBlur = ESTILO.glowIntensidad * 1.5;
         ctx.shadowColor = "#FFD700";
         ctx.strokeStyle = "#FFD700";
-        ctx.lineWidth = ESTILO.miraGrosor + 2;
+        ctx.lineWidth = ESTILO.miraGrosor + 4;
     } else if (hayDeteccionErronea) {
         const parpadeo = Math.sin(Date.now() / 50) > 0;
         ctx.strokeStyle = parpadeo ? "#A020F0" : "#4B0082";
